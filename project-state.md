@@ -1,9 +1,13 @@
 # Project state
-Last updated: 2026-10-08
+Last updated: 2026-10-13
 
 ## Works
 - A Next.js site (App Router, TypeScript, plain CSS) is live on Vercel at https://ai-workshop-two-omega.vercel.app/
 - A Supabase project exists at https://ofvzqpxzwalrfjxykfyx.supabase.co and is linked to the repo.
+- On the live site, a person can create an account with an email and a password of at least 8 characters. Right after, the page says "Signed in as" followed by their email.
+- A person can sign out, and then log back in with the same email and password. A wrong password shows an error message and they stay signed out.
+- A person who closes the tab while signed in and comes back to the site is still signed in.
+- The /account page shows the Log in form when nobody is signed in.
 
 ## Broken or flaky
 - Nothing reported.
