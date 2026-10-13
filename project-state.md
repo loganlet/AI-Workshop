@@ -8,6 +8,10 @@ Last updated: 2026-10-13
 - A person can sign out, and then log back in with the same email and password. A wrong password shows an error message and they stay signed out.
 - A person who closes the tab while signed in and comes back to the site is still signed in.
 - The /account page shows the Log in form when nobody is signed in.
+- A signed-in person can type a study task, pick one of six skills (Listening, Speaking, Reading, Writing, Vocabulary, Grammar), and click Add. The task appears right away with its skill name next to it.
+- A person's tasks are saved. After signing out and back in, they see the same tasks with the same skills.
+- Each person sees only their own tasks. A second account sees none of the first account's tasks.
+- A person can click Mark done on a task. It shows as done and stays done after the page is reloaded.
 
 ## Broken or flaky
 - Nothing reported.
