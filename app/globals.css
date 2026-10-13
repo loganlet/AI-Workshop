@@ -184,3 +184,80 @@ button:disabled {
 .auth-switch {
   margin: 1rem 0 0;
 }
+
+.tasks {
+  border-top: 1px solid var(--border);
+  margin: 1.5rem 0 0;
+  padding-top: 1.5rem;
+}
+
+.task-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.task-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+.task-form label:first-child {
+  flex: 1 1 14rem;
+}
+
+.task-form input,
+.task-form select {
+  font: inherit;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.task-form button {
+  align-self: flex-end;
+}
+
+.task-items {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.task {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  margin: 0;
+}
+
+.task-title {
+  flex: 1 1 12rem;
+}
+
+.task-skill {
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 0 0.6rem;
+}
+
+.task.done .task-title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.task-status {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
