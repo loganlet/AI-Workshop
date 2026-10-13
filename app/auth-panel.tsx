@@ -9,6 +9,7 @@ import {
   signUp,
   type Session,
 } from "./supabase-auth";
+import TaskList from "./task-list";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -92,6 +93,7 @@ export default function AuthPanel() {
         <button type="button" onClick={handleSignOut} disabled={busy}>
           Sign out
         </button>
+        <TaskList />
       </div>
     );
   }
