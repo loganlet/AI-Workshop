@@ -27,6 +27,7 @@
 - Work only toward the done-criteria of the ACTIVE slice. Note anything else as a backlog suggestion in the pull request; do not build it.
 - Keys and passwords live only in Vercel > ai-workshop > Settings > Environment Variables. Code reads them from environment variables by name.
 - A slice is finished only when its done-criteria pass on the live site, not when the code is pushed.
+- Before opening a pull request, update roadmap.md and project-state.md to match the work in it.
 
 ## Current focus
 See roadmap.md. Work only on the slice marked ACTIVE.
