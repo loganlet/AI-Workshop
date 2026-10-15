@@ -27,11 +27,12 @@ export type Task = {
 
 const TASK_COLUMNS = "id,title,skill,done";
 
-async function dataRequest(
+// Shared by supabase-notes.ts. Always returns a list of rows.
+export async function dataRequest<Row = Task>(
   path: string,
   method: "GET" | "POST" | "PATCH",
   body?: object,
-): Promise<Task[]> {
+): Promise<Row[]> {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     throw new Error("Tasks are not set up on this site yet.");
   }
@@ -72,11 +73,21 @@ async function dataRequest(
     throw new Error(message);
   }
 
-  return Array.isArray(data) ? (data as Task[]) : [];
+  return Array.isArray(data) ? (data as Row[]) : [];
 }
 
 export async function listTasks(): Promise<Task[]> {
   return dataRequest(`tasks?select=${TASK_COLUMNS}&order=created_at.asc`, "GET");
+}
+
+// Returns null if the task does not exist or belongs to someone else; the
+// database hides other people's tasks, so both cases look the same here.
+export async function getTask(id: string): Promise<Task | null> {
+  const [task] = await dataRequest(
+    `tasks?id=eq.${encodeURIComponent(id)}&select=${TASK_COLUMNS}`,
+    "GET",
+  );
+  return task ?? null;
 }
 
 export async function addTask(title: string, skill: Skill): Promise<Task> {
