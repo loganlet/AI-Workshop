@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   SKILLS,
@@ -110,7 +111,9 @@ export default function TaskList() {
         <ul className="task-items">
           {tasks.map((task) => (
             <li key={task.id} className={task.done ? "task done" : "task"}>
-              <span className="task-title">{task.title}</span>
+              <Link href={`/tasks/${task.id}`} className="task-title">
+                {task.title}
+              </Link>
               <span className="task-skill">{task.skill}</span>
               {task.done ? (
                 <span className="task-status">Done</span>

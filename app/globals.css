@@ -261,3 +261,79 @@ button:disabled {
   color: var(--muted);
   font-size: 0.9375rem;
 }
+
+.task-title {
+  text-decoration: none;
+}
+
+.task-title:hover,
+.task-title:focus {
+  text-decoration: underline;
+}
+
+.back-link {
+  margin-bottom: 1.5rem;
+}
+
+.task-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.task-header h1 {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+.notes {
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+
+.note-items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+
+.note {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  margin: 0;
+}
+
+.note-date {
+  display: block;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.note-body {
+  margin: 0.25rem 0 0;
+  white-space: pre-wrap;
+}
+
+.note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.note-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+.note-form textarea {
+  font: inherit;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  resize: vertical;
+}
