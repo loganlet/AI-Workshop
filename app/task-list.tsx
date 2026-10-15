@@ -5,12 +5,47 @@ import { useEffect, useState, type FormEvent } from "react";
 import {
   SKILLS,
   addTask,
+  completeTask,
   listTasks,
-  markTaskDone,
+  localToday,
   type ListedTask,
+  type Repeat,
   type Skill,
 } from "./supabase-tasks";
 import { MAX_NOTE_LENGTH, addNote } from "./supabase-notes";
+
+const REPEAT_CHOICES: { value: Repeat; label: string }[] = [
+  { value: "none", label: "Never" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+];
+
+// "2026-10-19" -> "Mon Oct 19". The date is built from its parts so it stays
+// on the same calendar day; new Date("2026-10-19") would read it as UTC
+// midnight, which is the evening before in Hawaii.
+function formatDue(date: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(year, month - 1, day)
+    .toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    })
+    .replace(",", "");
+}
+
+// Not-done tasks first, soonest due date first, tasks without a date last;
+// then done tasks. Ties keep the order the tasks were created in.
+function sortTasks(tasks: ListedTask[]): ListedTask[] {
+  return [...tasks].sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.done) return 0;
+    if (a.due_date === b.due_date) return 0;
+    if (a.due_date === null) return 1;
+    if (b.due_date === null) return -1;
+    return a.due_date < b.due_date ? -1 : 1;
+  });
+}
 
 export default function TaskList() {
   const [tasks, setTasks] = useState<ListedTask[]>([]);
@@ -18,6 +53,8 @@ export default function TaskList() {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [skill, setSkill] = useState<Skill>(SKILLS[0]);
+  const [repeat, setRepeat] = useState<Repeat>("none");
+  const [due, setDue] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -49,8 +86,12 @@ export default function TaskList() {
     try {
       // Two separate saves: the note needs the new task's id, which only
       // exists once the task is saved.
-      const task = await addTask(trimmed, skill);
+      // A repeating task needs a due date to count from; use today if blank.
+      const dueDate = due || (repeat === "none" ? null : localToday());
+      const task = await addTask(trimmed, skill, repeat, dueDate);
       setTitle("");
+      setRepeat("none");
+      setDue("");
       if (!trimmedNote) {
         setNote("");
         setTasks((current) => [...current, { ...task, noteCount: 0 }]);
@@ -78,12 +119,9 @@ export default function TaskList() {
     setError("");
     setBusy(true);
     try {
-      const updated = await markTaskDone(id);
-      setTasks((current) =>
-        current.map((task) =>
-          task.id === updated.id ? { ...updated, noteCount: task.noteCount } : task,
-        ),
-      );
+      await completeTask(id);
+      // Reload the whole list so a repeating task's new copy shows up.
+      setTasks(await listTasks());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not update the task.");
     } finally {
@@ -129,6 +167,27 @@ export default function TaskList() {
             ))}
           </select>
         </label>
+        <label>
+          Repeat
+          <select
+            value={repeat}
+            onChange={(e) => setRepeat(e.target.value as Repeat)}
+          >
+            {REPEAT_CHOICES.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Due
+          <input
+            type="date"
+            value={due}
+            onChange={(e) => setDue(e.target.value)}
+          />
+        </label>
         <button type="submit" disabled={busy}>
           Add
         </button>
@@ -146,12 +205,18 @@ export default function TaskList() {
         <p className="auth-muted">No tasks yet.</p>
       ) : (
         <ul className="task-items">
-          {tasks.map((task) => (
+          {sortTasks(tasks).map((task) => (
             <li key={task.id} className={task.done ? "task done" : "task"}>
               <Link href={`/tasks/${task.id}`} className="task-title">
                 {task.title}
               </Link>
               <span className="task-skill">{task.skill}</span>
+              {task.due_date && (
+                <span className="task-due">Due {formatDue(task.due_date)}</span>
+              )}
+              {task.repeat !== "none" && (
+                <span className="task-repeat">Repeats {task.repeat}</span>
+              )}
               <Link href={`/tasks/${task.id}`} className="task-notes-link">
                 {task.noteCount > 0 ? `Notes (${task.noteCount})` : "Notes"}
               </Link>

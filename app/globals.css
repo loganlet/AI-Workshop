@@ -365,3 +365,14 @@ button:disabled {
   font-size: 0.875rem;
   white-space: nowrap;
 }
+
+.task-due,
+.task-repeat {
+  color: var(--muted);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.task-repeat {
+  font-style: italic;
+}

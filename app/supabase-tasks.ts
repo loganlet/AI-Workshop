@@ -18,14 +18,31 @@ export const SKILLS = [
 
 export type Skill = (typeof SKILLS)[number];
 
+export const REPEATS = ["none", "daily", "weekly"] as const;
+
+export type Repeat = (typeof REPEATS)[number];
+
 export type Task = {
   id: string;
   title: string;
   skill: Skill;
   done: boolean;
+  // A calendar date like "2026-10-19", or null when the task has no due date.
+  due_date: string | null;
+  repeat: Repeat;
 };
 
-const TASK_COLUMNS = "id,title,skill,done";
+const TASK_COLUMNS = "id,title,skill,done,due_date,repeat";
+
+// The person's own date today as "YYYY-MM-DD", built from the browser's local
+// date. toISOString() would give the UTC date, which in Hawaii is already
+// tomorrow from 2pm onward.
+export function localToday(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
 
 // Shared by supabase-notes.ts. Always returns a list of rows.
 export async function dataRequest<Row = Task>(
@@ -102,10 +119,17 @@ export async function getTask(id: string): Promise<Task | null> {
   return task ?? null;
 }
 
-export async function addTask(title: string, skill: Skill): Promise<Task> {
+export async function addTask(
+  title: string,
+  skill: Skill,
+  repeat: Repeat,
+  dueDate: string | null,
+): Promise<Task> {
   const [task] = await dataRequest(`tasks?select=${TASK_COLUMNS}`, "POST", {
     title,
     skill,
+    repeat,
+    due_date: dueDate,
   });
   if (!task) {
     throw new Error("The task was not saved. Please try again.");
@@ -113,14 +137,12 @@ export async function addTask(title: string, skill: Skill): Promise<Task> {
   return task;
 }
 
-export async function markTaskDone(id: string): Promise<Task> {
-  const [task] = await dataRequest(
-    `tasks?id=eq.${encodeURIComponent(id)}&select=${TASK_COLUMNS}`,
-    "PATCH",
-    { done: true },
-  );
-  if (!task) {
-    throw new Error("That task could not be updated. Please reload the page.");
-  }
-  return task;
+// Ticks a task off with the database function complete_task, which marks it
+// done and, if it repeats, creates the next copy in the same step. The
+// browser sends its own date because the database only knows UTC.
+export async function completeTask(id: string): Promise<void> {
+  await dataRequest("rpc/complete_task", "POST", {
+    p_task_id: id,
+    p_today: localToday(),
+  });
 }
