@@ -7,14 +7,16 @@ import {
   addTask,
   listTasks,
   markTaskDone,
+  type ListedTask,
   type Skill,
-  type Task,
 } from "./supabase-tasks";
+import { MAX_NOTE_LENGTH, addNote } from "./supabase-notes";
 
 export default function TaskList() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<ListedTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
+  const [note, setNote] = useState("");
   const [skill, setSkill] = useState<Skill>(SKILLS[0]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -36,12 +38,35 @@ export default function TaskList() {
       return;
     }
 
+    const trimmedNote = note.trim();
+    if (trimmedNote.length > MAX_NOTE_LENGTH) {
+      setError(`Notes can be at most ${MAX_NOTE_LENGTH} characters.`);
+      return;
+    }
+
     setError("");
     setBusy(true);
     try {
+      // Two separate saves: the note needs the new task's id, which only
+      // exists once the task is saved.
       const task = await addTask(trimmed, skill);
-      setTasks((current) => [...current, task]);
       setTitle("");
+      if (!trimmedNote) {
+        setNote("");
+        setTasks((current) => [...current, { ...task, noteCount: 0 }]);
+        return;
+      }
+      try {
+        await addNote(task.id, trimmedNote);
+        setTasks((current) => [...current, { ...task, noteCount: 1 }]);
+        setNote("");
+      } catch {
+        // Keep the note text in the box so it isn't lost.
+        setTasks((current) => [...current, { ...task, noteCount: 0 }]);
+        setError(
+          "The task was added, but the note wasn't saved. Open the task to add it.",
+        );
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add the task.");
     } finally {
@@ -55,7 +80,9 @@ export default function TaskList() {
     try {
       const updated = await markTaskDone(id);
       setTasks((current) =>
-        current.map((task) => (task.id === updated.id ? updated : task)),
+        current.map((task) =>
+          task.id === updated.id ? { ...updated, noteCount: task.noteCount } : task,
+        ),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not update the task.");
@@ -77,6 +104,16 @@ export default function TaskList() {
             maxLength={200}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+          />
+        </label>
+        <label className="task-form-notes">
+          Notes
+          <textarea
+            rows={2}
+            maxLength={MAX_NOTE_LENGTH}
+            placeholder="Optional"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
           />
         </label>
         <label>
@@ -115,6 +152,9 @@ export default function TaskList() {
                 {task.title}
               </Link>
               <span className="task-skill">{task.skill}</span>
+              <Link href={`/tasks/${task.id}`} className="task-notes-link">
+                {task.noteCount > 0 ? `Notes (${task.noteCount})` : "Notes"}
+              </Link>
               {task.done ? (
                 <span className="task-status">Done</span>
               ) : (

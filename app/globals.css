@@ -194,7 +194,7 @@ button:disabled {
 .task-form {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
@@ -206,12 +206,14 @@ button:disabled {
   font-weight: 600;
 }
 
-.task-form label:first-child {
+.task-form label:first-child,
+.task-form .task-form-notes {
   flex: 1 1 14rem;
 }
 
 .task-form input,
-.task-form select {
+.task-form select,
+.task-form textarea {
   font: inherit;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border);
@@ -219,8 +221,29 @@ button:disabled {
   background: #fff;
 }
 
+.task-form textarea {
+  resize: vertical;
+}
+
 .task-form button {
   align-self: flex-end;
+}
+
+/* On narrow screens, put each field on its own full-width row. */
+@media (max-width: 639px) {
+  .task-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .task-form label:first-child,
+  .task-form .task-form-notes {
+    flex: none;
+  }
+
+  .task-form button {
+    align-self: flex-start;
+  }
 }
 
 .task-items {
@@ -336,4 +359,9 @@ button:disabled {
   border-radius: 6px;
   background: #fff;
   resize: vertical;
+}
+
+.task-notes-link {
+  font-size: 0.875rem;
+  white-space: nowrap;
 }
