@@ -76,8 +76,20 @@ export async function dataRequest<Row = Task>(
   return Array.isArray(data) ? (data as Row[]) : [];
 }
 
-export async function listTasks(): Promise<Task[]> {
-  return dataRequest(`tasks?select=${TASK_COLUMNS}&order=created_at.asc`, "GET");
+export type ListedTask = Task & { noteCount: number };
+
+// Fetches every task together with how many notes it has, in a single
+// request. "task_notes(count)" asks the database to count each task's notes
+// and send the number back as task_notes: [{ count: 2 }].
+export async function listTasks(): Promise<ListedTask[]> {
+  const rows = await dataRequest<Task & { task_notes?: { count: number }[] }>(
+    `tasks?select=${TASK_COLUMNS},task_notes(count)&order=created_at.asc`,
+    "GET",
+  );
+  return rows.map(({ task_notes, ...task }) => ({
+    ...task,
+    noteCount: task_notes?.[0]?.count ?? 0,
+  }));
 }
 
 // Returns null if the task does not exist or belongs to someone else; the
